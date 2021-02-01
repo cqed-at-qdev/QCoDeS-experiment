@@ -34,7 +34,6 @@ class SequenceBuilder(BagOfBeans):
 
     def __init__(self,name,**kwargs):
         super().__init__(name, **kwargs)
-        self.SR = 2.5e9
 
         self.add_parameter('cycle_time',
                       label='Pulse Cycle Time',
@@ -59,7 +58,7 @@ class SequenceBuilder(BagOfBeans):
 
     def MultiQ_SSB_Spec_NoOverlap(self, start:float, stop:float, npts:int) -> bb.Sequence():
         """ 
-        Returns a broadbean sequence contains two channels with orthogonal sine/cosine pulses varying in frequency
+        Updates the broadbean sequence so it contains two channels with orthogonal sine/cosine pulses for an array of  frequencies
 
             args:
             start (float): Starting point of the frequency interval
@@ -67,7 +66,7 @@ class SequenceBuilder(BagOfBeans):
             npts (int): Number of point in the frequency interval
         """
         
-        seq = bb.Sequence()
+        seqtemp = bb.Sequence()
         
         freq_interval = np.linspace(start,stop,npts)
 
@@ -77,13 +76,13 @@ class SequenceBuilder(BagOfBeans):
             seg_cos = self.seg_sine(frequency = f, phase=np.pi/2)
             elem.addBluePrint(1, seg_sin)
             elem.addBluePrint(2, seg_cos)
-            seq.addElement(i+1, elem)
-            seq.setSequencingTriggerWait(i+1, 0)
-            seq.setSequencingNumberOfRepetitions(i+1, 0)
-            seq.setSequencingEventJumpTarget(i+1, 0)
-            seq.setSequencingGoto(i+1, 0)
-        seq.setSR(self.SR)
-        return seq
+            seqtemp.addElement(i+1, elem)
+            seqtemp.setSequencingTriggerWait(i+1, 0)
+            seqtemp.setSequencingNumberOfRepetitions(i+1, 0)
+            seqtemp.setSequencingEventJumpTarget(i+1, 0)
+            seqtemp.setSequencingGoto(i+1, 0)
+        seqtemp.setSR(self.SR.get())
+        self.seq.set(seqtemp)
 
     def seg_sine(self,
                 frequency:float,
@@ -103,6 +102,6 @@ class SequenceBuilder(BagOfBeans):
         seg_sin.insertSegment(1, sine, (frequency, 1e-3, 0, phase), name='pulse', dur=self.pulse_time)
         seg_sin.insertSegment(2, ramp, (0, 0), name='read', dur=first_time)
         seg_sin.marker1 = [(first_time+self.pulse_time+self.marker_offset, self.cycle_time)]
-        seg_sin.setSR(self.SR)
+        seg_sin.setSR(self.SR.get())
         
         return seg_sin

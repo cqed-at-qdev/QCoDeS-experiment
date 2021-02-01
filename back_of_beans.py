@@ -38,7 +38,7 @@ class ParSeq(Parameter):
     def snapshot_base(
         self, update: bool = False,
         params_to_skip_update: Optional[Sequence[str]] = None) -> Dict:
-        return self.seq.description #{'status': self.status}
+        return self.seq.description 
     
     def get_raw(self):
         return self.seq
