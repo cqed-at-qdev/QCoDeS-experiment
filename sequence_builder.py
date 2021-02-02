@@ -112,7 +112,7 @@ class SequenceBuilder(BagOfBeans):
         return seg_sin
 
     def uploadToAWG(self, awg_amp: list = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]) -> None:
-        if '5014' in self.awg.__class__:
+        if '5014' in str(self.awg.__class__):
             #for i,  chan in enumerate(self.seq.get().channels):
             #    self.AWG.channels[chan].AMP(float(chbox[chan-1].text()))
             self.awg.ch1_amp(awg_amp[0])
@@ -123,7 +123,7 @@ class SequenceBuilder(BagOfBeans):
             start_time = time.time()
             self.awg.make_send_and_load_awg_file(*package[:])
             print("Sequence uploaded in %s seconds" %(time.time()-start_time));
-        elif '5208' in self.awg.__class__:
+        elif '5208' in str(self.awg.__class__):
             self.seq.get().name = 'sequence_from_gui'
             self.awg.mode('AWG')
             for chan in self.seq.get().channels:
