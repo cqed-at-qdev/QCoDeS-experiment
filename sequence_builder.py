@@ -1,5 +1,6 @@
 import numpy as np
 import broadbean as bb
+import time
 from qcodes.instrument.base import Instrument
 from qcodes import validators as vals
 from back_of_beans import BagOfBeans
@@ -114,7 +115,7 @@ class SequenceBuilder(BagOfBeans):
     def uploadToAWG(self, awg_amp: list = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]) -> None:
         if '5014' in str(self.awg.__class__):
             #for i,  chan in enumerate(self.seq.get().channels):
-            #    self.AWG.channels[chan].AMP(float(chbox[chan-1].text()))
+            #    self.awg.channels[chan].AMP(float(chbox[chan-1].text()))
             self.awg.ch1_amp(awg_amp[0])
             self.awg.ch2_amp(awg_amp[1])
             self.awg.ch3_amp(awg_amp[2])
@@ -137,15 +138,28 @@ class SequenceBuilder(BagOfBeans):
             
             seqx_input = self.seq.get().outputForSEQXFile()
             start_time=time.time()
-            seqx_output = self.AWG.makeSEQXFile(*seqx_input)
+            seqx_output = self.awg.makeSEQXFile(*seqx_input)
             # transfer it to the awg harddrive
-            self.AWG.sendSEQXFile(seqx_output, 'sequence_from_gui.seqx')
-            self.AWG.loadSEQXFile('sequence_from_gui.seqx')
+            self.awg.sendSEQXFile(seqx_output, 'sequence_from_gui.seqx')
+            self.awg.loadSEQXFile('sequence_from_gui.seqx')
             #time.sleep(1.300)
             for i,  chan in enumerate(self.seq.get().channels):       
-                self.AWG.channels[chan-1].setSequenceTrack('sequence_from_gui', i+1)
-                self.AWG.channels[chan-1].state(1)
+                self.awg.channels[chan-1].setSequenceTrack('sequence_from_gui', i+1)
+                self.awg.channels[chan-1].state(1)
             print("Sequence uploaded in %s seconds" %(time.time()-start_time))
  
         else:
             print('Choose an AWG model')
+
+    def runAWG(self):
+        if '5014' in str(self.awg.__class__):
+            self.awg.run()
+        else:
+            seq_chan = self.seq.get().channels
+            for i, chan in enumerate(self.awg.channels):
+                if i+1 in seq_chan:
+                    chan[i].state(1)
+                else:
+                    chan[i].state(0)
+            self.awg.play()
+
