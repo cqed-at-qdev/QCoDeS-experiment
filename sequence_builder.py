@@ -32,8 +32,9 @@ class SequenceBuilder(BagOfBeans):
             sequence of two channels with orthogonal sine/cosine pulses
     """
 
-    def __init__(self,name,**kwargs):
+    def __init__(self,name:str, awg:Instrument,**kwargs):
         super().__init__(name, **kwargs)
+        self.awg = awg
 
         self.add_parameter('cycle_time',
                       label='Pulse Cycle Time',
@@ -82,7 +83,11 @@ class SequenceBuilder(BagOfBeans):
             seqtemp.setSequencingEventJumpTarget(i+1, 0)
             seqtemp.setSequencingGoto(i+1, 0)
         seqtemp.setSR(self.SR.get())
-        self.seq.set(seqtemp)
+        
+        for chan in seqtemp.channels:
+            seqtemp.setChannelAmplitude(chan,1)
+            seqtemp.setChannelOffset(chan,1)
+        self.seq.set(seqtemp)  
 
     def seg_sine(self,
                 frequency:float,
@@ -105,3 +110,42 @@ class SequenceBuilder(BagOfBeans):
         seg_sin.setSR(self.SR.get())
         
         return seg_sin
+
+    def uploadToAWG(self, awg_amp: list = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]) -> None:
+        if '5014' in self.awg.__class__:
+            #for i,  chan in enumerate(self.seq.get().channels):
+            #    self.AWG.channels[chan].AMP(float(chbox[chan-1].text()))
+            self.awg.ch1_amp(awg_amp[0])
+            self.awg.ch2_amp(awg_amp[1])
+            self.awg.ch3_amp(awg_amp[2])
+            self.awg.ch4_amp(awg_amp[3])
+            package = self.seq.get().outputForAWGFile()
+            start_time = time.time()
+            self.awg.make_send_and_load_awg_file(*package[:])
+            print("Sequence uploaded in %s seconds" %(time.time()-start_time));
+        elif '5208' in self.awg.__class__:
+            self.seq.get().name = 'sequence_from_gui'
+            self.awg.mode('AWG')
+            for chan in self.seq.get().channels:
+                self.awg.channels[chan-1].resolution(12)
+                self.awg.channels[chan-1].awg_amplitude(awg_amp[chan-1])
+                self.seq.get().setChannelAmplitude(chan, self.awg.channels[chan-1].awg_amplitude())
+            self.awg.clearSequenceList()
+            self.awg.clearWaveformList()
+            self.awg.sample_rate(self.seq.get().SR)
+            self.awg.sample_rate(self.seq.get().SR)
+            
+            seqx_input = self.seq.get().outputForSEQXFile()
+            start_time=time.time()
+            seqx_output = self.AWG.makeSEQXFile(*seqx_input)
+            # transfer it to the awg harddrive
+            self.AWG.sendSEQXFile(seqx_output, 'sequence_from_gui.seqx')
+            self.AWG.loadSEQXFile('sequence_from_gui.seqx')
+            #time.sleep(1.300)
+            for i,  chan in enumerate(self.seq.get().channels):       
+                self.AWG.channels[chan-1].setSequenceTrack('sequence_from_gui', i+1)
+                self.AWG.channels[chan-1].state(1)
+            print("Sequence uploaded in %s seconds" %(time.time()-start_time))
+ 
+        else:
+            print('Choose an AWG model')
