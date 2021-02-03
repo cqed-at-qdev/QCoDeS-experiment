@@ -47,11 +47,11 @@ class ParSeq(Parameter):
         self.seq = newseq
 
     def from_file(self):
-        seq_path = self.root_instrument.seq_path.get()
+        seq_path = self.root_instrument.seq_path
         self.seq = bb.Sequence.init_from_json(seq_path)
     
     def to_file(self):
-        seq_path = self.root_instrument.seq_path()
+        seq_path = self.root_instrument.seq_path
         self.seq.write_to_json(seq_path)      
 
 
