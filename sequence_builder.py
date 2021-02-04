@@ -87,6 +87,11 @@ class SequenceBuilder(BagOfBeans):
             else:
                 seqtemp.setSequencingGoto(i+1, 0)
         seqtemp.setSR(self.SR.get())
+        
+        for chan in seqtemp.channels:
+            seqtemp.setChannelAmplitude(chan,1)
+            seqtemp.setChannelOffset(chan,1)
+        self.seq.set(seqtemp)  
 
 
     def MultiQ_Lifetime_overlap(self, start:float, stop:float, npts:int) -> bb.Sequence():
