@@ -33,7 +33,7 @@ class SequenceBuilder(BagOfBeans):
             sequence of two channels with orthogonal sine/cosine pulses
     """
 
-    def __init__(self,name:str, awg:Instrument,**kwargs):
+    def __init__(self,name:str, awg:Instrument = None,**kwargs):
         super().__init__(name, **kwargs)
         self.awg = awg
 
@@ -82,9 +82,42 @@ class SequenceBuilder(BagOfBeans):
             seqtemp.setSequencingTriggerWait(i+1, 0)
             seqtemp.setSequencingNumberOfRepetitions(i+1, 0)
             seqtemp.setSequencingEventJumpTarget(i+1, 0)
-            seqtemp.setSequencingGoto(i+1, 0)
+            if i == npts-1:
+                seqtemp.setSequencingGoto(i+1, -1)
+            else:
+                seqtemp.setSequencingGoto(i+1, 0)
         seqtemp.setSR(self.SR.get())
+
+
+    def MultiQ_Lifetime_overlap(self, start:float, stop:float, npts:int) -> bb.Sequence():
+        """ 
+        Updates the broadbean sequence so it contains one channels containing a pi-pulse
+        varying the time between the end of the pi-pulse and the readout
         
+            args:
+            start (float): Starting point of the delta time
+            stop (float): Endpoint point of the delta time
+            npts (int): Number of point in the time interval
+        """
+        
+        seqtemp = bb.Sequence()
+        
+        pulse_to_readout_time = np.linspace(start,stop,npts)
+
+        for i,delta_time in enumerate(pulse_to_readout_time):
+            elem = bb.Element()
+            seg_pi = self.seg_pi(delta_time)
+            elem.addBluePrint(1, seg_pi)
+            seqtemp.addElement(i+1, elem)
+            seqtemp.setSequencingTriggerWait(i+1, 0)
+            seqtemp.setSequencingNumberOfRepetitions(i+1, 0)
+            seqtemp.setSequencingEventJumpTarget(i+1, 0)
+            if i == npts-1:
+                seqtemp.setSequencingGoto(i+1, -1)
+            else:
+                seqtemp.setSequencingGoto(i+1, 0)
+        seqtemp.setSR(self.SR.get())
+      
         for chan in seqtemp.channels:
             seqtemp.setChannelAmplitude(chan,1)
             seqtemp.setChannelOffset(chan,1)
@@ -106,11 +139,32 @@ class SequenceBuilder(BagOfBeans):
         seg_sin = bb.BluePrint()
         seg_sin.insertSegment(0, ramp, (0, 0), name='first', dur=first_time)
         seg_sin.insertSegment(1, sine, (frequency, 1e-3, 0, phase), name='pulse', dur=self.pulse_time)
-        seg_sin.insertSegment(2, ramp, (0, 0), name='read', dur=first_time)
+        seg_sin.insertSegment(2, ramp, (0, 0), name='read', dur=self.readout_time)
         seg_sin.marker1 = [(first_time+self.pulse_time+self.marker_offset, self.cycle_time)]
         seg_sin.setSR(self.SR.get())
         
         return seg_sin
+
+    def seg_pi(self,
+                pulse_to_readout_time:float = 0) -> bb.BluePrint:
+        """
+        Returns a broadbean BluePrint of a PI pulse 
+
+        args:
+        pulse_to_readout_time (float): time between the end of the PI pulse and the readout  
+        """
+        
+        first_time = self.cycle_time-self.pulse_time-self.readout_time-pulse_to_readout_time 
+        end_time = self.readout_time+pulse_to_readout_time
+        
+        seg_sin = bb.BluePrint()
+        seg_sin.insertSegment(0, ramp, (0, 0), name='first', dur=first_time)
+        seg_sin.insertSegment(1, ramp, (0.5, 0.5), name='pulse', dur=self.pulse_time)
+        seg_sin.insertSegment(2, ramp, (0, 0), name='read', dur=end_time)
+        seg_sin.marker1 = [(first_time+self.pulse_time+self.marker_offset+pulse_to_readout_time, self.cycle_time)]
+        seg_sin.setSR(self.SR.get())
+        
+        return seg_sin        
 
     def uploadToAWG(self, awg_amp: list = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]) -> None:
         if '5014' in str(self.awg.__class__):
@@ -163,3 +217,13 @@ class SequenceBuilder(BagOfBeans):
                     chan[i].state(0)
             self.awg.play()
 
+
+    def repeat_settings_infinity_loop(seqtemp: bb.Sequence,npts:int) -> bb.Sequence: 
+        seqtemp.setSequencingTriggerWait(i+1, 0)
+        seqtemp.setSequencingNumberOfRepetitions(i+1, 0)
+        seqtemp.setSequencingEventJumpTarget(i+1, 0)
+        if i == npts-1:
+            seqtemp.setSequencingGoto(i+1, -1)
+        else:
+            seqtemp.setSequencingGoto(i+1, 0)
+        return seqtemp
