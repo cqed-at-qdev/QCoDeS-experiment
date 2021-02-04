@@ -83,7 +83,7 @@ class SequenceBuilder(BagOfBeans):
             seqtemp.setSequencingNumberOfRepetitions(i+1, 0)
             seqtemp.setSequencingEventJumpTarget(i+1, 0)
             if i == npts-1:
-                seqtemp.setSequencingGoto(i+1, -1)
+                seqtemp.setSequencingGoto(i+1, 1)
             else:
                 seqtemp.setSequencingGoto(i+1, 0)
         seqtemp.setSR(self.SR.get())
@@ -113,7 +113,7 @@ class SequenceBuilder(BagOfBeans):
             seqtemp.setSequencingNumberOfRepetitions(i+1, 0)
             seqtemp.setSequencingEventJumpTarget(i+1, 0)
             if i == npts-1:
-                seqtemp.setSequencingGoto(i+1, -1)
+                seqtemp.setSequencingGoto(i+1, 1)
             else:
                 seqtemp.setSequencingGoto(i+1, 0)
         seqtemp.setSR(self.SR.get())
