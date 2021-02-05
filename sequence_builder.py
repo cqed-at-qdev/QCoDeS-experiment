@@ -67,9 +67,9 @@ class SequenceBuilder(BagOfBeans):
             stop (float): Endpoint point of the frequency interval
             npts (int): Number of point in the frequency interval
         """
-        
-        seqtemp = bb.Sequence()
-        
+        SR = self.SR.get()
+        self.seq.set(bb.Sequence())
+        self.SR.set(SR)
         freq_interval = np.linspace(start,stop,npts)
 
         for i,f in enumerate(freq_interval):
@@ -78,21 +78,14 @@ class SequenceBuilder(BagOfBeans):
             seg_cos = self.seg_sine(frequency = f, phase=np.pi/2)
             elem.addBluePrint(1, seg_sin)
             elem.addBluePrint(2, seg_cos)
-            seqtemp.addElement(i+1, elem)
-            seqtemp.setSequencingTriggerWait(i+1, 0)
-            seqtemp.setSequencingNumberOfRepetitions(i+1, 0)
-            seqtemp.setSequencingEventJumpTarget(i+1, 0)
-            if i == npts-1:
-                seqtemp.setSequencingGoto(i+1, 1)
-            else:
-                seqtemp.setSequencingGoto(i+1, 0)
-        seqtemp.setSR(self.SR.get())
-        
-        for chan in seqtemp.channels:
-            seqtemp.setChannelAmplitude(chan,1)
-            seqtemp.setChannelOffset(chan,1)
-        self.seq.set(seqtemp)  
+            self.seq.seq.addElement(i+1, elem)
+            self.seq_settings_infinity_loop(i+1,npts)
+        self.seq.seq.setSR(self.SR.get())
 
+        for chan in self.seq.seq.channels:
+            self.seq.seq.setChannelAmplitude(chan,1)
+            self.seq.seq.setChannelOffset(chan,0)
+   
 
     def MultiQ_Lifetime_overlap(self, start:float, stop:float, npts:int) -> bb.Sequence():
         """ 
@@ -104,8 +97,9 @@ class SequenceBuilder(BagOfBeans):
             stop (float): Endpoint point of the delta time
             npts (int): Number of point in the time interval
         """
-        
-        seqtemp = bb.Sequence()
+        SR = self.SR.get()
+        self.seq.set(bb.Sequence())
+        self.SR.set(SR)
         
         pulse_to_readout_time = np.linspace(start,stop,npts)
 
@@ -113,20 +107,14 @@ class SequenceBuilder(BagOfBeans):
             elem = bb.Element()
             seg_pi = self.seg_pi(delta_time)
             elem.addBluePrint(1, seg_pi)
-            seqtemp.addElement(i+1, elem)
-            seqtemp.setSequencingTriggerWait(i+1, 0)
-            seqtemp.setSequencingNumberOfRepetitions(i+1, 0)
-            seqtemp.setSequencingEventJumpTarget(i+1, 0)
-            if i == npts-1:
-                seqtemp.setSequencingGoto(i+1, 1)
-            else:
-                seqtemp.setSequencingGoto(i+1, 0)
-        seqtemp.setSR(self.SR.get())
+            self.seq.seq.addElement(i+1, elem)
+            self.seq_settings_infinity_loop(i+1,npts)
+        self.seq.seq.setSR(self.SR.get())
       
-        for chan in seqtemp.channels:
-            seqtemp.setChannelAmplitude(chan,1)
-            seqtemp.setChannelOffset(chan,1)
-        self.seq.set(seqtemp)  
+        for chan in self.seq.seq.channels:
+            self.seq.seq.setChannelAmplitude(chan,1)
+            self.seq.seq.setChannelOffset(chan,0)
+        
 
     def seg_sine(self,
                 frequency:float,
@@ -223,12 +211,20 @@ class SequenceBuilder(BagOfBeans):
             self.awg.play()
 
 
-    def repeat_settings_infinity_loop(seqtemp: bb.Sequence,npts:int) -> bb.Sequence: 
-        seqtemp.setSequencingTriggerWait(i+1, 0)
-        seqtemp.setSequencingNumberOfRepetitions(i+1, 0)
-        seqtemp.setSequencingEventJumpTarget(i+1, 0)
-        if i == npts-1:
-            seqtemp.setSequencingGoto(i+1, -1)
+    def seq_settings_infinity_loop(self, elem_nr:int, last_elem_nr:int) -> None:
+        """
+        Play element 1 time and go to the next,
+        except if you are the last element, then play 1 time and go to the first Element.
+
+        args:
+        elem_nr (int): the number of the element
+        last_elem_nr (int): the number of the last element in the sequence  
+        """
+        self.seq.seq.setSequencingTriggerWait(elem_nr, 0)
+        self.seq.seq.setSequencingNumberOfRepetitions(elem_nr, 1)
+        self.seq.seq.setSequencingEventJumpTarget(elem_nr, 0)
+        if elem_nr == last_elem_nr:
+            self.seq.seq.setSequencingGoto(elem_nr, 1)
         else:
-            seqtemp.setSequencingGoto(i+1, 0)
-        return seqtemp
+            self.seq.seq.setSequencingGoto(elem_nr, 0)
+        
