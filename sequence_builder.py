@@ -80,9 +80,7 @@ class SequenceBuilder(BagOfBeans):
             self.seq_settings_infinity_loop(i+1,npts)
         self.seq.seq.setSR(self.SR.get())
 
-        for chan in self.seq.seq.channels:
-            self.seq.seq.setChannelAmplitude(chan,1)
-            self.seq.seq.setChannelOffset(chan,0)
+        self.seq.set_all_channel_amplitude_offset(amplitude=1, offset=0)
    
 
     def MultiQ_Lifetime_overlap(self, start:float, stop:float, npts:int) -> bb.Sequence():
@@ -108,9 +106,7 @@ class SequenceBuilder(BagOfBeans):
             self.seq_settings_infinity_loop(i+1,npts)
         self.seq.seq.setSR(self.SR.get())
       
-        for chan in self.seq.seq.channels:
-            self.seq.seq.setChannelAmplitude(chan,1)
-            self.seq.seq.setChannelOffset(chan,0)
+        self.seq.set_all_channel_amplitude_offset(amplitude=1, offset=0)
         
 
     def seg_sine(self,

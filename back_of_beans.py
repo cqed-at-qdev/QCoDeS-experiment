@@ -59,6 +59,11 @@ class ParSeq(Parameter):
         self.seq = bb.Sequence()
         self.seq.setSR(SR)
 
+    def set_all_channel_amplitude_offset(self,amplitude:float = 1,offset:float = 0) -> None:
+        for chan in self.seq.channels:
+            self.seq.setChannelAmplitude(chan,amplitude)
+            self.seq.setChannelOffset(chan,offset)
+
 class sample_rate(Parameter):
     
     def get_raw(self):
