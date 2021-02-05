@@ -52,8 +52,12 @@ class ParSeq(Parameter):
     
     def to_file(self):
         seq_path = self.root_instrument.seq_path
-        self.seq.write_to_json(seq_path)      
+        self.seq.write_to_json(seq_path)
 
+    def empty_sequence(self):
+        SR = self.seq.SR
+        self.seq = bb.Sequence()
+        self.seq.setSR(SR)
 
 class sample_rate(Parameter):
     

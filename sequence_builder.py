@@ -67,9 +67,7 @@ class SequenceBuilder(BagOfBeans):
             stop (float): Endpoint point of the frequency interval
             npts (int): Number of point in the frequency interval
         """
-        SR = self.SR.get()
-        self.seq.set(bb.Sequence())
-        self.SR.set(SR)
+        self.seq.empty_sequence()
         freq_interval = np.linspace(start,stop,npts)
 
         for i,f in enumerate(freq_interval):
@@ -97,9 +95,8 @@ class SequenceBuilder(BagOfBeans):
             stop (float): Endpoint point of the delta time
             npts (int): Number of point in the time interval
         """
-        SR = self.SR.get()
-        self.seq.set(bb.Sequence())
-        self.SR.set(SR)
+        
+        self.seq.empty_sequence()
         
         pulse_to_readout_time = np.linspace(start,stop,npts)
 
