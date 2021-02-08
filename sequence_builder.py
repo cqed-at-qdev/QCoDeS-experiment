@@ -6,7 +6,7 @@ from qcodes import validators as vals
 from back_of_beans import BagOfBeans
 
 
-# The pulsebuilding module comes with a (small) collection of functions appropriate for being segments.
+
 ramp = bb.PulseAtoms.ramp  # args: start, stop
 sine = bb.PulseAtoms.sine  # args: freq, ampl, off, phase
 
@@ -31,6 +31,9 @@ class SequenceBuilder(BagOfBeans):
         -------
         MultiQ_SSB_Spec_NoOverlap
             sequence of two channels with orthogonal sine/cosine pulses
+        MultiQ_Lifetime_overlap
+            One channels containing a pi-pulse
+            varying the time between the end of the pi-pulse and the readout
     """
 
     def __init__(self,name:str, awg:Instrument = None,**kwargs):
