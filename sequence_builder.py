@@ -201,9 +201,9 @@ class SequenceBuilder(BagOfBeans):
             seq_chan = self.seq.get().channels
             for i, chan in enumerate(self.awg.channels):
                 if i+1 in seq_chan:
-                    chan[i].state(1)
+                    chan.state(1)
                 else:
-                    chan[i].state(0)
+                    chan.state(0)
             self.awg.play()
 
 
