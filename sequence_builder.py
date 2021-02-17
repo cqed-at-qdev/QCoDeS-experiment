@@ -64,6 +64,7 @@ class SequenceBuilder(BagOfBeans):
     def MultiQ_SSB_Spec_NoOverlap(self, start:float, stop:float, npts:int) -> bb.Sequence():
         """ 
         Updates the broadbean sequence so it contains two channels with orthogonal sine/cosine pulses for an array of  frequencies
+        and two channels for the readout for IQ mixing 
 
             args:
             start (float): Starting point of the frequency interval
@@ -75,10 +76,17 @@ class SequenceBuilder(BagOfBeans):
 
         for i,f in enumerate(freq_interval):
             elem = bb.Element()
-            seg_sin = self.seg_sine(frequency = f)
+            if i == 1:
+                seg_sin = self.seg_sine(frequency = f,marker=True)
+            else:
+                seg_sin = self.seg_sine(frequency = f, marker=False)
             seg_cos = self.seg_sine(frequency = f, phase=np.pi/2)
+            seg_sin_readout = self.seg_sine_readout(frequency = f,marker=False)
+            seg_cos_readout = self.seg_sine_readout(frequency = f, phase=np.pi/2 ,marker=True)
             elem.addBluePrint(1, seg_sin)
             elem.addBluePrint(2, seg_cos)
+            elem.addBluePrint(3,seg_sin_readout)
+            elem.addBluePrint(4,seg_cos_readout)
             self.seq.seq.addElement(i+1, elem)
             self.seq_settings_infinity_loop(i+1,npts)
         self.seq.seq.setSR(self.SR.get())
@@ -114,7 +122,8 @@ class SequenceBuilder(BagOfBeans):
 
     def seg_sine(self,
                 frequency:float,
-                phase:float = 0) -> bb.BluePrint:
+                phase:float = 0,
+                marker:bool = False) -> bb.BluePrint:
         """
         Returns a broadbean BluePrint contaning a flat segment, sine segment and a flat segment for readout
 
@@ -129,7 +138,8 @@ class SequenceBuilder(BagOfBeans):
         seg_sin.insertSegment(0, ramp, (0, 0), name='first', dur=first_time)
         seg_sin.insertSegment(1, sine, (frequency, 1e-3, 0, phase), name='pulse', dur=self.pulse_time)
         seg_sin.insertSegment(2, ramp, (0, 0), name='read', dur=self.readout_time)
-        seg_sin.marker1 = [(first_time+self.pulse_time+self.marker_offset, self.cycle_time)]
+        if marker:
+            seg_sin.marker1 = [(first_time+self.pulse_time+self.marker_offset, self.cycle_time)]
         seg_sin.setSR(self.SR.get())
         
         return seg_sin
@@ -223,4 +233,29 @@ class SequenceBuilder(BagOfBeans):
             self.seq.seq.setSequencingGoto(elem_nr, 1)
         else:
             self.seq.seq.setSequencingGoto(elem_nr, 0)
+
+
+    def seg_sine_readout(self,
+                frequency:float,
+                phase:float = 0,
+                amplitude:float = 1e-3,
+                marker:bool = True ) -> bb.BluePrint:
+        """
+        Returns a broadbean BluePrint contaning a flat segment, sine segment and a flat segment for readout
+
+        args:
+        frequency (float): frequency of the sine 
+        phase (float): phase of the sine 
+        """
         
+        first_time = self.cycle_time-self.readout_time 
+        
+        seg_sin = bb.BluePrint()
+        seg_sin.insertSegment(0, ramp, (0, 0), name='first', dur=first_time)
+        seg_sin.insertSegment(1, sine, (frequency, amplitude, 0, phase), name='pulse', dur=self.readout_time)
+        if marker:
+            seg_sin.marker1 = [(first_time+self.marker_offset, self.cycle_time)]
+        seg_sin.setSR(self.SR.get())
+        
+        return seg_sin
+
