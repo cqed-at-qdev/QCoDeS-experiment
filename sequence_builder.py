@@ -61,7 +61,7 @@ class SequenceBuilder(BagOfBeans):
                       set_cmd= lambda x : x,
                       vals=vals.Numbers(-1e-5,1e-5))
 
-    def MultiQ_SSB_Spec_NoOverlap(self, start:float, stop:float, npts:int) -> bb.Sequence():
+    def MultiQ_SSB_Spec_NoOverlap(self, start:float, stop:float, npts:int) -> None:
         """ 
         Updates the broadbean sequence so it contains two channels with orthogonal sine/cosine pulses for an array of  frequencies
         and two channels for the readout for IQ mixing 
@@ -94,7 +94,7 @@ class SequenceBuilder(BagOfBeans):
         self.seq.set_all_channel_amplitude_offset(amplitude=1, offset=0)
    
 
-    def MultiQ_Lifetime_overlap(self, start:float, stop:float, npts:int) -> bb.Sequence():
+    def MultiQ_Lifetime_overlap(self, start:float, stop:float, npts:int) -> None:
         """ 
         Updates the broadbean sequence so it contains one channels containing a pi-pulse
         varying the time between the end of the pi-pulse and the readout
@@ -119,6 +119,29 @@ class SequenceBuilder(BagOfBeans):
       
         self.seq.set_all_channel_amplitude_offset(amplitude=1, offset=0)
         
+    def test_station(self, start:float, stop:float, npts:int,channel: int) -> None:
+        """ 
+        Updates the broadbean sequence so it containsone channel with a sine pulse for an array of  frequencies
+
+            args:
+            start (float): Starting point of the frequency interval
+            stop (float): Endpoint point of the frequency interval
+            npts (int): Number of point in the frequency interval
+            channel (int): The Channel of the seq/AWG
+        """
+        self.seq.empty_sequence()
+        freq_interval = np.linspace(start,stop,npts)
+
+        for i,f in enumerate(freq_interval):
+            elem = bb.Element()
+            seg_sin = self.seg_sine(frequency = f)
+            elem.addBluePrint(channel, seg_sin)
+            self.seq.seq.addElement(i+1, elem)
+            self.seq_settings_infinity_loop(i+1,npts)
+        self.seq.seq.setSR(self.SR.get())
+
+        self.seq.set_all_channel_amplitude_offset(amplitude=1, offset=0)
+
 
     def seg_sine(self,
                 frequency:float,
@@ -211,9 +234,9 @@ class SequenceBuilder(BagOfBeans):
             seq_chan = self.seq.get().channels
             for i, chan in enumerate(self.awg.channels):
                 if i+1 in seq_chan:
-                    chan[i].state(1)
+                    chan.state(1)
                 else:
-                    chan[i].state(0)
+                    chan.state(0)
             self.awg.play()
 
 

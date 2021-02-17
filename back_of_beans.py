@@ -64,6 +64,12 @@ class ParSeq(Parameter):
             self.seq.setChannelAmplitude(chan,amplitude)
             self.seq.setChannelOffset(chan,offset)
 
+    def plot(self):
+        plotter(self.seq)
+
+    def plot_elem_nr(self,elem_nr):
+        plotter(self.seq.element(elem_nr))
+
 class sample_rate(Parameter):
     
     def get_raw(self):
