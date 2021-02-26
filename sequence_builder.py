@@ -115,15 +115,16 @@ class SequenceBuilder(BagOfBeans):
         """
         
         self.seq.empty_sequence()
-        
+        readout_freq = self.readout_freq_1.get()
         pulse_to_readout_time = np.linspace(start,stop,npts)
         readout_freq = self.readout_freq_1.get() #- self.cavity.frequency()
         for i,delta_time in enumerate(pulse_to_readout_time):
             self.elem = bb.Element()
             seg_pi = self.seg_pi(delta_time)
             self.elem.addBluePrint(1, seg_pi)
-            self.seq.seq.addElement(i+1,self.elem)
             self.elem_add_readout_pulse(readout_freq)
+            self.seq.seq.addElement(i+1,self.elem)
+
             self.seq_settings_infinity_loop(i+1,npts)
         self.seq.seq.setSR(self.SR.get())
       
@@ -191,7 +192,7 @@ class SequenceBuilder(BagOfBeans):
         
         seg_sin = bb.BluePrint()
         seg_sin.insertSegment(0, ramp, (0, 0), name='first', dur=first_time)
-        seg_sin.insertSegment(1, ramp, (0.5, 0.5), name='pulse', dur=self.pulse_time)
+        seg_sin.insertSegment(1, ramp, (0.05, 0.05), name='pulse', dur=self.pulse_time)
         seg_sin.insertSegment(2, ramp, (0, 0), name='read', dur=end_time)
         seg_sin.marker1 = [(first_time+self.pulse_time+self.marker_offset+pulse_to_readout_time, self.cycle_time)]
         seg_sin.setSR(self.SR.get())
@@ -268,7 +269,7 @@ class SequenceBuilder(BagOfBeans):
             self.seq.seq.setSequencingGoto(elem_nr, 0)
 
 
-    def elem_add_readout_pulse(self, frequency:float, amplitude:float = 0.5):
+    def elem_add_readout_pulse(self, frequency:float, amplitude:float = 0.05):
         seg_sin_readout = self.seg_sine_readout(frequency=frequency, amplitude=amplitude, marker=False)
         seg_cos_readout = self.seg_sine_readout(frequency=frequency, amplitude=amplitude, phase=np.pi/2 ,marker=True)
         self.elem.addBluePrint(3,seg_sin_readout)
