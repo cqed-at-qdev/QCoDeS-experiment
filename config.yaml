@@ -56,29 +56,31 @@ instruments:
 
 
   alazar: 
-    driver: qdev_wrappers.customised_instruments.AlazarTech_ATS9360_ext
-    type: AlazarTech_ATS9360_ext
+    #driver: qcodes.instrument_drivers.AlazarTech.ATS9360.AlazarTech_ATS9360
+    type: qcodes.instrument_drivers.AlazarTech.ATS9360.AlazarTech_ATS9360
     enable_forced_reconnect: true
-    parameters:
-      clock_source: {initial_value: 'EXTERNAL_CLOCK_10MHz_REF'}
-      external_sample_rate: {initial_value: 500_000_000} # We normally use 500_000_000
-      coupling1: {initial_value: 'DC'}
-      coupling2: {initial_value: 'DC'}
-      trigger_operation: {initial_value: 'TRIG_ENGINE_OP_J'}
-      trigger_engine1: {initial_value: 'TRIG_ENGINE_J'}
-      trigger_source1: {initial_value: 'EXTERNAL'}
-      trigger_slope1: {initial_value: 'TRIG_SLOPE_POSITIVE'}
-      trigger_level1: {initial_value: 140}
-      trigger_source2: {initial_value: 'DISABLE'}
-      trigger_slope2: {initial_value: 'TRIG_SLOPE_POSITIVE'}
-      trigger_level2: {initial_value: 140}
-      external_trigger_coupling: {initial_value: 'DC'}
-      external_trigger_range: {initial_value: 'ETR_2V5'}
-      trigger_delay: {initial_value: 0}
-      timeout_ticks: {initial_value: 0}
-      aux_io_mode: {initial_value: AUX_IN_AUXILIARY}
-      aux_io_param: {initial_value: NONE}
-      seq_mode: {monitor: false}
+    
+        #parameters:
+      #clock_source: {initial_value: 'EXTERNAL_CLOCK_10MHz_REF'}
+      #external_sample_rate: {initial_value: 500_000_000} # We normally use 500_000_000
+      #coupling1: {initial_value: 'DC'}
+      #coupling2: {initial_value: 'DC'}
+      #trigger_operation: {initial_value: 'TRIG_ENGINE_OP_J'}
+      #trigger_engine1: {initial_value: 'TRIG_ENGINE_J'}
+      #trigger_source1: {initial_value: 'EXTERNAL'}
+      #trigger_slope1: {initial_value: 'TRIG_SLOPE_POSITIVE'}
+      #trigger_level1: {initial_value: 140}
+      #trigger_source2: {initial_value: 'DISABLE'}
+      #trigger_slope2: {initial_value: 'TRIG_SLOPE_POSITIVE'}
+      #trigger_level2: {initial_value: 140}
+      #external_trigger_coupling: {initial_value: 'DC'}
+      #external_trigger_range: {initial_value: 'ETR_2V5'}
+      #trigger_delay: {initial_value: 0}
+      #timeout_ticks: {initial_value: 0}
+      #aux_io_mode: {initial_value: AUX_IN_AUXILIARY}
+      #aux_io_param: {initial_value: NONE}
+      ##seq_mode: {monitor: false}
+    
 
   tektronix_awg:
     driver: qcodes.instrument_drivers.tektronix.AWG5014
@@ -359,8 +361,8 @@ instruments:
         monitor: true
  
   alazar_ctrl:
-    driver: qdev_wrappers.alazar_controllers.ATSChannelController
-    type: ATSChannelController
+    #driver: qdev_wrappers.alazar_controllers.ATSChannelController
+    type: qdev_wrappers.alazar_controllers.ATSChannelController.ATSChannelController
     enable_forced_reconnect: true
     init:
       alazar_name: 'alazar'
@@ -468,6 +470,15 @@ instruments:
   #        label: Q2 gate
   #        limits: -12, 12
   #        alias: Q4gate
+
+  channelA:
+    type: qdev_wrappers.alazar_controllers.alazar_channel.AlazarChannel
+    init:
+      demod: false
+      integrate_samples: false
+      average_buffers: True
+      average_records: True
+      alazar_channel: 'A'
        
   sample_mag:
     driver: qdev_wrappers.alazar_controllers.alazar_channel
