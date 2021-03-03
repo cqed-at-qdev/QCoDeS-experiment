@@ -76,7 +76,7 @@ if __name__ == '__main__':
     cavity = scfg.load_instrument('rs_cavity')  
     localos = scfg.load_instrument('rs_localos')  #second output of the cavity that is not modulated by the AWG
     qubit = scfg.load_instrument('rs_qubit')
-​
+
 ​
     Monitor(*scfg.monitor_parameters.values())
 ​
