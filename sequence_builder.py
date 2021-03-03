@@ -170,7 +170,7 @@ class SequenceBuilder(BagOfBeans):
         
         seg_sin = bb.BluePrint()
         seg_sin.insertSegment(0, ramp, (0, 0), name='first', dur=first_time)
-        seg_sin.insertSegment(1, sine, (frequency, 1e-3, 0, phase), name='pulse', dur=self.pulse_time)
+        seg_sin.insertSegment(1, sine, (frequency, 0.05, 0, phase), name='pulse', dur=self.pulse_time)
         seg_sin.insertSegment(2, ramp, (0, 0), name='read', dur=self.readout_time)
         if marker:
             seg_sin.marker1 = [(first_time+self.pulse_time+self.marker_offset, self.cycle_time)]
