@@ -103,8 +103,7 @@ instruments:
       clock_freq: {initial_value: 1000000000}
 
   rs_localos:
-    driver: qcodes.instrument_drivers.rohde_schwarz.SGS100A
-    type: RohdeSchwarz_SGS100A
+    type: qcodes.instrument_drivers.rohde_schwarz.SGS100A.RohdeSchwarz_SGS100A
     init:
       address: 'TCPIP0::192.168.15.108::inst0::INSTR'
     force_close_existing_instrument: true
@@ -144,13 +143,9 @@ instruments:
       ref_osc_external_freq: {initial_value: 10MHz} 
 
   rs_qubit:
-    driver: qcodes.instrument_drivers.rohde_schwarz.SGS100A
-    type: RohdeSchwarz_SGS100A
+    type: qcodes.instrument_drivers.rohde_schwarz.SGS100A.RohdeSchwarz_SGS100A
     init:
        address: 'TCPIP0::192.168.15.107::inst0::INSTR'
-       #address: 'TCPIP0::192.168.15.104::inst0::INSTR'
-      # Temp from T3 below
-#      address: 'TCPIP0::192.168.15.105::inst0::INSTR'
     auto_reconnect_instrument: true
     parameters:
       status: {monitor: true}
@@ -160,11 +155,9 @@ instruments:
       power: {monitor: true, label: Qubit Drive Power}
       
   rs_cavity:
-    driver: qcodes.instrument_drivers.rohde_schwarz.SGS100A
-    type: RohdeSchwarz_SGS100A
+    type: qcodes.instrument_drivers.rohde_schwarz.SGS100A.RohdeSchwarz_SGS100A
     init:
       address: 'TCPIP0::192.168.15.105::inst0::INSTR'
-      #address: 'TCPIP0::192.168.15.104::inst0::INSTR'
     force_close_existing_instrument: true
     parameters:
       status: {monitor: true}
@@ -232,10 +225,10 @@ instruments:
       output: {monitor: true}
 
   minicircuits_switch:
-     driver: qcodes.instrument_drivers.Minicircuits.USB_SPDT
+     #driver: qcodes.instrument_drivers.Minicircuits.USB_SPDT
      #driver: local_instruments.T2cust_USB_SPDT
+     type: qcodes.instrument_drivers.Minicircuits.USB_SPDT.USB_SPDT
      auto_reconnect_instrument: true
-     type: USB_SPDT
      init:
        driver_path: A:\\Scripts\\local_instruments\\mcl_RF_Switch_Controller64
      parameters:
@@ -407,8 +400,7 @@ instruments:
         sequence_marker: 4M2
 
   switch:
-    driver: qdev_wrappers.customised_instruments.switch_ext
-    type: Switch_ext
+    type: qdev_wrappers.customised_instruments.switch_ext.Switch_ext
     init:
       switch_confuguration:
         alazar:
@@ -473,12 +465,22 @@ instruments:
 
   channelA:
     type: qdev_wrappers.alazar_controllers.alazar_channel.AlazarChannel
+    enable_forced_reconnect: true
     init:
       demod: false
       integrate_samples: false
       average_buffers: True
       average_records: True
       alazar_channel: 'A'
+    #init:
+     # alazar_channel: 'A'
+      #demod: true
+      #average_buffers: true
+      #average_records: false
+      #integrate_samples: true
+    ## demod_freq: {initial_value: 40000000, monitor: true}
+     # demod_type: {initial_value: magnitude}
+     # data: {label: 'f4 Readout Magnitude', unit: 'V'}      
        
   sample_mag:
     driver: qdev_wrappers.alazar_controllers.alazar_channel
