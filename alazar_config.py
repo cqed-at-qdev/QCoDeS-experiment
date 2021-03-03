@@ -59,8 +59,10 @@ def alazarconfigttwo(alazar):
         alazar.external_trigger_range('ETR_2V5')
         alazar.trigger_delay(0)
         alazar.timeout_ticks(0)
-        alazar.aux_io_mode('AUX_IN_AUXILIARY') # AUX_IN_TRIGGER_ENABLE for seq mode on
-        alazar.aux_io_param('NONE') # TRIG_SLOPE_POSITIVE for seq mode on
+        alazar.aux_io_mode('AUX_IN_TRIGGER_ENABLE') # AUX_IN_TRIGGER_ENABLE for seq mode on
+        alazar.aux_io_param('TRIG_SLOPE_POSITIVE') # TRIG_SLOPE_POSITIVE for seq mode on
+        #alazar.aux_io_mode('AUX_IN_AUXILIARY') # AUX_IN_TRIGGER_ENABLE for seq mode on
+        #alazar.aux_io_param('NONE') # TRIG_SLOPE_POSITIVE for seq mode on
 
 
          #parameters:
